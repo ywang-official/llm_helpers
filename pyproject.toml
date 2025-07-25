@@ -1,0 +1,54 @@
+[project]
+name = "llm-helpers"
+version = "0.1.0"
+description = "A Python library for LLM interactions with support for multiple providers, context management, and advanced text processing"
+authors = [
+    {email = "maxwb596@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.18.1",
+    "openai>=1.12.0",
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.6.0",
+    "tiktoken>=0.9.0",
+    "ruamel-yaml>=0.18.5",
+    "jinja2>=3.1.0"
+]
+
+[tool.poetry]
+packages = [{include = "llm_helpers"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0.0"
+pytest-asyncio = "^0.21.0"
+black = "^23.0.0"
+isort = "^5.12.0"
+flake8 = "^7.0.0"
+mypy = "^1.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"] 

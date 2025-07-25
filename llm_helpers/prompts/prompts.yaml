@@ -1,0 +1,72 @@
+sample_string_prompt:
+  system_prompt: |
+    This is a sample prompt used as a demo. Your job is to return Hello World, followed by a one-line summary of the input that was provided.
+
+  selected_parts_prompt: |
+    Please see input below:
+
+    {{ demo_input }}
+
+  response_type: raw_string
+  examples:
+    - input: |
+        John is 20 years old. John loves sports.
+      output: "Hello World, John is a sport loving 20 year old."
+    - input:
+        Bob loves watching spongebob, it's his only purpose in life.
+      output: "Hello World, Bob is a desparate spongebob fan."
+  config:
+    max_history_turns: 10
+    include_history: false
+    max_tokens: 2000
+
+sample_json_prompt:
+  system_prompt: |
+    This is a sample prompt used as a demo. Your job is to return the characters from the input as a json object.
+  
+  selected_parts_prompt: |
+    Please see input below:
+    
+    {{ demo_input }}
+  
+  response_type: parsed_json
+  custom_schema: |
+    {
+      "characters": [
+        {
+          "name": "Name of the character",
+          "age": "Age of the character. If not provided, set to 42.",
+          "hobbies": ["A list of hobbies of the character. If not provided, set to ['reading', 'writing', 'sleeping']"]
+        }
+      ]
+    }
+  examples:
+    - input: |
+        John is 20 years old. John loves sports.
+      output: |
+        {
+          "characters": [
+            {
+              "name": "John",
+              "age": 20,
+              "hobbies": ["sports"]
+            }
+          ]
+        }
+    - input: |
+        Bob loves watching spongebob, it's his only purpose in life.
+      output: |
+        {
+          "characters": [
+            {
+              "name": "Bob",
+              "age": 42,
+              "hobbies": ["watching spongebob"]
+            }
+          ]
+        }
+
+  config:
+    max_history_turns: 10
+    include_history: false
+    max_tokens: 2000
