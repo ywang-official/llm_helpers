@@ -54,31 +54,27 @@ The library uses:
 ## Quick Start
 
 ### Basic LLM Usage
-
 ```python
 import asyncio
-from llm_helpers import LLMHandler
+from llm_helpers import LLMHandler, ProcessorCore, PromptHelper
 
 async def main():
-    # Create an LLM handler (uses LLM_PROVIDER env var)
-    handler = LLMHandler.create()
+    # Create handler and processor
+    llm_handler = LLMHandler.create()
+    prompt_helper = PromptHelper("path/to/your/prompts")
+    processor = ProcessorCore(llm_handler=llm_handler, prompt_helper=prompt_helper)
     
-    # Or specify provider explicitly
-    handler = LLMHandler.create("anthropic")  # or "openai"
+    # Process text with custom components
+    components = {
+        "demo_input": "Your text content here"
+    }
     
-    # Custom configuration
-    handler = LLMHandler.create("openai", 
-                               temperature=0.9, 
-                               max_tokens=2048,
-                               model="gpt-3.5-turbo")
-    
-    # Send a simple request
-    response = await handler.send_request(
-        messages=[{"role": "user", "content": "Hello, how are you?"}]
+    response = await processor.process(
+        components=components,
+        process_type="sample_string_prompt"
     )
     print(response)
 
-# Run the async function
 asyncio.run(main())
 ```
 
@@ -94,49 +90,31 @@ async def main():
     
     # Get a complete prompt bundle with automatic JSON formatting
     bundle = prompt_helper.get_prompt_bundle(
-        "sequential_processing",
-        response_type=ResponseType.PARSED_JSON,
-        prev_story_summary="A hero begins their journey",
-        chunk_window="Chapter 1: The adventure starts"
+        "sample_string_prompt",
+        response_type=ResponseType.PARSED_JSON
     )
     
-    # Use with LLM
-    handler = LLMHandler.create()
-    response = await handler.send_request(
-        messages=[{"role": "user", "content": bundle["user_prompt"]}],
-        system=bundle["system_prompt"],
-        **bundle["config"]
-    )
-    print(response)
+    print(bundle)
 
-asyncio.run(main())
+main()
 ```
 
-### Advanced Processing
-
-```python
-import asyncio
-from llm_helpers import LLMHandler, ProcessorCore
-
-async def main():
-    # Create handler and processor
-    handler = LLMHandler.create()
-    processor = ProcessorCore(handler)
-    
-    # Process text with custom components
-    components = {
-        "selected_parts": "Your text content here",
-        "target_language": "English",
-        "additional_instructions": "Be concise"
+#### Output
+```json
+{
+    "system_prompt": "This is a sample prompt used as a demo. Your job is to return Hello World, followed by a one-line summary of the input that was provided.\n\n\n\nYour task: return a valid JSON object with the format below. All valid json content should be wrapped with __json_start__ and __json_end__.\n- JSON object with key \"sample_string_prompt\":\n{\n  \"sample_string_prompt\": \"Your response content as a string\"\n}\n\n<expected response>\n__json_start__\n{\n  \"sample_string_prompt\": <your response content here>\n}\n__json_end__\n</expected response>\n\nExamples:\n<example_1_input>\nJohn is 20 years old. John loves sports.\n</example_1_input>\n<example_1_output>\n__json_start__\n{ \"sample_string_prompt\": \"Hello World, John is a sport loving 20 year old.\" }\n__json_end__\n</example_1_output>\n\n<example_2_input>\nBob loves watching spongebob, it\\'s his only purpose in life.\n</example_2_input>\n<example_2_output>\n__json_start__\n{ \"sample_string_prompt\": \"Hello World, Bob is a desparate spongebob fan.\" }\n__json_end__\n</example_2_output>\n",
+    "user_prompt": "Please see input below:\n\n",
+    "config":{
+        "max_history_turns":10,
+        "include_history":false,
+        "max_tokens":2000
+    },
+    "metadata":{
+        "prompt_key":"sample_string_prompt",
+        "response_type":"<ResponseType.RAW_STRING":"raw_string"">",
+        "custom_schema":"None"
     }
-    
-    response = await processor.process(
-        components=components,
-        process_type="sequential_processing"
-    )
-    print(response)
-
-asyncio.run(main())
+}
 ```
 
 ### Context Management
@@ -178,39 +156,6 @@ async def controlled_request():
 
 ## API Reference
 
-### LLMHandler
-
-Main factory class for creating LLM handlers.
-
-#### Methods
-
-- `LLMHandler.create(provider: str = None) -> BaseLLMHandler`
-
-### BaseLLMHandler
-
-Abstract base class for LLM handlers.
-
-### ContextHandler
-
-Manages conversation history and context.
-
-#### Methods
-
-- `add_to_history(role: str, content: str, metadata: dict = None) -> int`
-- `get_history(last_n_turns=None, start_turn=None, end_turn=None) -> List[Dict]`
-- `clear_history() -> None`
-
-### PromptHelper
-
-Advanced prompt management with automatic JSON formatting.
-
-#### Methods
-
-- `get_prompt_bundle(prompt_key: str, response_type: ResponseType = None, **kwargs) -> Dict`
-- `build_system_prompt(prompt_key: str, response_type: ResponseType = None) -> str`
-- `build_user_prompt(prompt_key: str, **kwargs) -> str`
-- `add_custom_prompt(prompt_key: str, system_prompt: str, user_prompt: str, config: Dict = None)`
-
 ### ProcessorCore
 
 Advanced text processing with prompt templates.
@@ -220,16 +165,6 @@ Advanced text processing with prompt templates.
 - `async process_v2(components: Dict, process_type: str, context: Dict = None) -> str`
 - `async parallel_batch_process(batches: List[Dict], process_type: str, context: Dict = None) -> List[str]`
 - `async sequential_batch_process(batches: List[Dict], process_type: str, context: Dict = None, sequential_config: Dict = None) -> AsyncGenerator[Dict, None]`
-
-### LLMRateLimiter
-
-Manages concurrent LLM sessions.
-
-#### Methods
-
-- `async acquire_session(session_id: str) -> None`
-- `async release_session(session_id: str) -> None`
-- `async get_queue_status() -> Dict`
 
 ## Configuration Details
 
@@ -305,8 +240,8 @@ poetry run mypy llm_helpers/
 
 ## License
 
-[Add your license information here]
+Apache V2
 
 ## Contributing
 
-[Add contributing guidelines here]
+Contribute however you like
