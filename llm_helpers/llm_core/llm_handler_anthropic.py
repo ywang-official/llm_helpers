@@ -2,7 +2,6 @@ import os
 from typing import List, Dict, Optional
 from .llm_handler import BaseLLMHandler
 from .context_handler import ContextHandler
-from .rate_limiter import rate_limiter
 from anthropic import AsyncAnthropic
 import uuid
 import logging
@@ -71,7 +70,7 @@ class AnthropicLLMHandler(BaseLLMHandler):
         
         try:
             # Acquire a session slot
-            await rate_limiter.acquire_session(session_id)
+            await self.rate_limiter.acquire_session(session_id)
             
             if include_history:
                 history = self.context_handler.get_history(
@@ -109,4 +108,4 @@ class AnthropicLLMHandler(BaseLLMHandler):
             raise
         finally:
             # Always release the session slot
-            await rate_limiter.release_session(session_id)
+            await self.rate_limiter.release_session(session_id)

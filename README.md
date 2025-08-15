@@ -216,20 +216,66 @@ print(history)
 
 ```python
 import asyncio
-from llm_helpers import rate_limiter
+from llm_helpers import LLMHandler, LLMRateLimiter
 
+# Each handler has its own rate limiter by default
+handler1 = LLMHandler.create("gemini", max_concurrent_sessions=10)
+handler2 = LLMHandler.create("gemini", max_concurrent_sessions=5)
+
+# Handlers are isolated - handler1 can have 10 concurrent sessions
+# while handler2 is limited to 5, independently
+
+# Share a rate limiter between handlers
+shared_limiter = LLMRateLimiter(max_concurrent_sessions=8)
+handler3 = LLMHandler.create("gemini", rate_limiter=shared_limiter)
+handler4 = LLMHandler.create("openai", rate_limiter=shared_limiter)
+# Now handler3 and handler4 share the same 8-session limit
+
+# Manual rate limiter usage (for custom scenarios)
 async def controlled_request():
     session_id = "unique_session_id"
+    rate_limiter = handler1.rate_limiter  # Use handler's rate limiter
     
     # Acquire session slot
     await rate_limiter.acquire_session(session_id)
     
     try:
         # Your LLM operations here
-        pass
+        response = await handler1.send_request(messages)
     finally:
         # Always release the slot
         await rate_limiter.release_session(session_id)
+```
+
+#### ProcessorCore Rate Limiting
+
+```python
+from llm_helpers import ProcessorCore, LLMRateLimiter
+
+# ProcessorCore with custom rate limiter configuration
+processor = ProcessorCore(
+    rate_limiter_config={"max_concurrent_sessions": 15}
+)
+
+# ProcessorCore with shared rate limiter
+shared_limiter = LLMRateLimiter(max_concurrent_sessions=20)
+processor = ProcessorCore(rate_limiter_config=shared_limiter)
+```
+
+#### Migration from Global Rate Limiter
+
+**Old approach (deprecated):**
+```python
+# Global rate limiter - all handlers shared the same limiter
+from llm_helpers import rate_limiter  # Global instance
+```
+
+**New approach (recommended):**
+```python
+# Each handler has its own rate limiter instance
+handler = LLMHandler.create("gemini", max_concurrent_sessions=10)
+# Access the handler's rate limiter
+status = await handler.rate_limiter.get_queue_status()
 ```
 
 ## API Reference
@@ -268,6 +314,10 @@ All LLM handlers support these configuration parameters:
 **Google Gemini-specific:**
 - `model`: Model name (default: "gemini-2.0-flash-exp")
 
+**Rate Limiter Configuration (All Handlers):**
+- `rate_limiter`: LLMRateLimiter instance or dict config for creating one
+- `max_concurrent_sessions`: Max concurrent sessions for rate limiter (if creating new)
+
 **Examples:**
 ```python
 # OpenAI with custom settings
@@ -286,6 +336,15 @@ handler = LLMHandler.create("gemini",
                            temperature=0.8,
                            model="gemini-2.0-flash-exp",
                            max_tokens=2048)
+
+# Rate limiter configuration examples
+handler = LLMHandler.create("gemini", max_concurrent_sessions=20)
+handler = LLMHandler.create("gemini", rate_limiter={"max_concurrent_sessions": 15})
+
+# Shared rate limiter between handlers
+shared_limiter = LLMRateLimiter(max_concurrent_sessions=10)
+handler1 = LLMHandler.create("gemini", rate_limiter=shared_limiter)
+handler2 = LLMHandler.create("openai", rate_limiter=shared_limiter)
 ```
 
 ### Prompt Templates (prompts.yaml)

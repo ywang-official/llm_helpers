@@ -3,7 +3,6 @@ from openai import AsyncOpenAI
 from typing import List, Dict, Optional
 from .llm_handler import BaseLLMHandler
 from .context_handler import ContextHandler
-from .rate_limiter import rate_limiter
 import uuid
 import logging
 
@@ -61,7 +60,7 @@ class OpenAILLMHandler(BaseLLMHandler):
         
         try:
             # Acquire a session slot
-            await rate_limiter.acquire_session(session_id)
+            await self.rate_limiter.acquire_session(session_id)
             
             if include_history:
                 history = self.context_handler.get_history(
@@ -101,4 +100,4 @@ class OpenAILLMHandler(BaseLLMHandler):
             raise
         finally:
             # Always release the session slot
-            await rate_limiter.release_session(session_id)
+            await self.rate_limiter.release_session(session_id)

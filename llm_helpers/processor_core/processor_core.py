@@ -1,20 +1,43 @@
-from typing import Dict, Optional, List, AsyncGenerator
+from typing import Dict, Optional, List, AsyncGenerator, Union, TYPE_CHECKING
 import logging
 import os
 import json
 import asyncio
 import re
 
-from ..llm_core.llm_handler import LLMHandler
+from ..llm_core.llm_handler import LLMHandler, BaseLLMHandler
 from ..llm_core.context_handler import ContextHandler
-from ..llm_core.rate_limiter import rate_limiter
 from ..prompt_core.prompt_helper import PromptHelper, ResponseType
+
+if TYPE_CHECKING:
+    from ..llm_core.rate_limiter import LLMRateLimiter
 
 logger = logging.getLogger(__name__)
 
 class ProcessorCore:
-    def __init__(self, llm_handler: Optional[LLMHandler] = None, prompt_helper: Optional[PromptHelper] = None):
-        self.llm_handler = llm_handler or LLMHandler.create()
+    def __init__(self, 
+                 llm_handler: Optional[BaseLLMHandler] = None, 
+                 prompt_helper: Optional[PromptHelper] = None,
+                 rate_limiter_config: Optional[Union[Dict, 'LLMRateLimiter']] = None,
+                 max_concurrent_sessions: Optional[int] = None):
+        """
+        Initialize ProcessorCore with optional rate limiter configuration.
+        
+        Args:
+            llm_handler: LLM handler instance. If None, creates default handler
+            prompt_helper: Prompt helper instance. If None, creates default
+            rate_limiter_config: Rate limiter configuration passed to LLM handler
+            max_concurrent_sessions: Max concurrent sessions for rate limiter
+        """
+        # If no handler provided, create one with rate limiter configuration
+        if llm_handler is None:
+            self.llm_handler = LLMHandler.create(
+                rate_limiter=rate_limiter_config,
+                max_concurrent_sessions=max_concurrent_sessions
+            )
+        else:
+            self.llm_handler = llm_handler
+            
         self.prompt_helper = prompt_helper or PromptHelper()
 
     async def _clean_json_response(self, raw_response, retry_count=0, max_retries=3):

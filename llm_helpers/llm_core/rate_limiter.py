@@ -105,5 +105,24 @@ class LLMRateLimiter:
                 'waiting_session_ids': [sid for sid, _ in self.waiting_queue]
             }
 
-# Global rate limiter instance
-rate_limiter = LLMRateLimiter() 
+# Backward compatibility - create a default global instance
+# This will be deprecated in favor of instance-based rate limiters
+_default_rate_limiter = None
+
+def get_default_rate_limiter() -> LLMRateLimiter:
+    """
+    Get the default global rate limiter instance.
+    
+    This is kept for backward compatibility but is deprecated.
+    Prefer using instance-based rate limiters through LLM handler configuration.
+    
+    Returns:
+        LLMRateLimiter: Default global rate limiter instance
+    """
+    global _default_rate_limiter
+    if _default_rate_limiter is None:
+        _default_rate_limiter = LLMRateLimiter()
+    return _default_rate_limiter
+
+# Backward compatibility alias - deprecated
+rate_limiter = get_default_rate_limiter()
