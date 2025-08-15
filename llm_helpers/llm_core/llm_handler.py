@@ -105,5 +105,8 @@ class LLMHandler:
         elif provider == "anthropic":
             from .llm_handler_anthropic import AnthropicLLMHandler
             return AnthropicLLMHandler(**kwargs)
+        elif provider == "gemini":
+            from .llm_handler_gemini import GeminiLLMHandler
+            return GeminiLLMHandler(**kwargs)
         else:
             raise ValueError(f"Invalid provider: {provider}")

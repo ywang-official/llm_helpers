@@ -4,7 +4,7 @@ A Python library for LLM interactions with support for multiple providers, conte
 
 ## Features
 
-- **Multi-Provider Support**: Works with Anthropic Claude and OpenAI GPT models
+- **Multi-Provider Support**: Works with Anthropic Claude, OpenAI GPT, and Google Gemini models
 - **Context Management**: Intelligent conversation history handling with configurable memory
 - **Rate Limiting**: Built-in concurrent request management and session handling
 - **Advanced Processing**: YAML-based prompt templates and JSON response processing
@@ -38,9 +38,10 @@ Create a `.env` file in your project root with the following variables:
 # LLM Provider API Keys
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
+GOOGLE_API_KEY=your_google_api_key_here
 
 # LLM Configuration
-LLM_PROVIDER=anthropic  # or openai
+LLM_PROVIDER=anthropic  # or openai or gemini
 NODE_ENV=development    # or production
 ```
 
@@ -54,13 +55,90 @@ The library uses:
 ## Quick Start
 
 ### Basic LLM Usage
+
+#### Using Factory Method (Recommended)
+```python
+import asyncio
+from llm_helpers import LLMHandler
+
+async def main():
+    # Create handler using factory method (uses LLM_PROVIDER env var)
+    handler = LLMHandler.create()
+    
+    # Or specify provider explicitly
+    handler = LLMHandler.create("gemini")  # or "openai", "anthropic"
+    
+    # Simple message
+    messages = [{"role": "user", "content": "Hello, how are you?"}]
+    response = await handler.send_request(messages)
+    print(response)
+
+asyncio.run(main())
+```
+
+#### Provider-Specific Usage
+
+##### Google Gemini
+```python
+import asyncio
+from llm_helpers import GeminiLLMHandler
+
+async def main():
+    # Direct instantiation with custom settings
+    handler = GeminiLLMHandler(
+        model="gemini-2.0-flash-exp",
+        temperature=0.8,
+        max_tokens=1000
+    )
+    
+    messages = [{"role": "user", "content": "Explain quantum computing"}]
+    system_instruction = "You are a helpful science teacher."
+    
+    response = await handler.send_request(
+        messages=messages,
+        system=system_instruction
+    )
+    print(response)
+
+asyncio.run(main())
+```
+
+##### OpenAI GPT
+```python
+import asyncio
+from llm_helpers import LLMHandler
+
+async def main():
+    handler = LLMHandler.create("openai", model="gpt-4o", temperature=0.7)
+    messages = [{"role": "user", "content": "Write a short story"}]
+    response = await handler.send_request(messages)
+    print(response)
+
+asyncio.run(main())
+```
+
+##### Anthropic Claude
+```python
+import asyncio
+from llm_helpers import LLMHandler
+
+async def main():
+    handler = LLMHandler.create("anthropic", model="claude-3-5-sonnet-20241022")
+    messages = [{"role": "user", "content": "Analyze this text"}]
+    response = await handler.send_request(messages)
+    print(response)
+
+asyncio.run(main())
+```
+
+#### Advanced Processing with Components
 ```python
 import asyncio
 from llm_helpers import LLMHandler, ProcessorCore, PromptHelper
 
 async def main():
     # Create handler and processor
-    llm_handler = LLMHandler.create()
+    llm_handler = LLMHandler.create("gemini")  # or any provider
     prompt_helper = PromptHelper("path/to/your/prompts")
     processor = ProcessorCore(llm_handler=llm_handler, prompt_helper=prompt_helper)
     
@@ -187,6 +265,9 @@ All LLM handlers support these configuration parameters:
 - `api_version`: API version (default: "2023-06-01")
 - `base_url`: API base URL (default: "https://api.anthropic.com/v1/messages")
 
+**Google Gemini-specific:**
+- `model`: Model name (default: "gemini-2.0-flash-exp")
+
 **Examples:**
 ```python
 # OpenAI with custom settings
@@ -199,6 +280,12 @@ handler = LLMHandler.create("openai",
 handler = LLMHandler.create("anthropic",
                            temperature=0.5,
                            model="claude-3-haiku-20240307")
+
+# Gemini with custom settings
+handler = LLMHandler.create("gemini",
+                           temperature=0.8,
+                           model="gemini-2.0-flash-exp",
+                           max_tokens=2048)
 ```
 
 ### Prompt Templates (prompts.yaml)
