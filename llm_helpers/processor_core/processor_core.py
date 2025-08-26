@@ -63,10 +63,10 @@ class ProcessorCore:
                 raise ValueError(f"Invalid JSON response from processor after {max_retries + 1} attempts")
             try:
                 logger.info(f"Attempting to reparse JSON response (attempt {retry_count + 1})")
-                components = {'selected_parts': raw_response}
+                components = {'input': raw_response}
                 response = await self.process(
                     components=components,
-                    process_type="fix_json",
+                    process_type="__fix_json__",
                 )
                 return await self._clean_json_response(response, retry_count + 1, max_retries)
             except Exception as e:

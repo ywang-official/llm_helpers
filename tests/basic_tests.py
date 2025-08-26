@@ -6,6 +6,9 @@ This example demonstrates the core functionality without requiring API keys.
 
 import asyncio
 from llm_helpers import ContextHandler, LLMRateLimiter
+import os
+import pytest
+from llm_helpers.llm_core.llm_handler_gemini import GeminiLLMHandler
 
 def test_context_handler():
     """Test the context handler functionality."""
@@ -88,6 +91,12 @@ def test_imports():
         return False
     
     return True
+
+@pytest.mark.asyncio
+def test_gemini_handler_instantiation():
+    os.environ["GEMINI_API_KEY"] = "fake-key-for-test"
+    handler = GeminiLLMHandler()
+    assert handler.provider == "gemini"
 
 async def main():
     """Run all tests."""

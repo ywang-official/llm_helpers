@@ -38,7 +38,6 @@ Create a `.env` file in your project root with the following variables:
 # LLM Provider API Keys
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
-GOOGLE_API_KEY=your_google_api_key_here
 
 # LLM Configuration
 LLM_PROVIDER=anthropic  # or openai or gemini
@@ -50,7 +49,7 @@ NODE_ENV=development    # or production
 The library uses:
 - Built-in default configurations (customizable via constructor parameters)
 - `PromptHelper` for flexible prompt management and automatic JSON formatting
-- `llm_helpers/prompts/prompts.yaml` - Default prompt templates
+- `llm_helpers/prompts/sample_prompts.yaml` - Default prompt templates
 
 ## Quick Start
 
@@ -347,7 +346,7 @@ handler1 = LLMHandler.create("gemini", rate_limiter=shared_limiter)
 handler2 = LLMHandler.create("openai", rate_limiter=shared_limiter)
 ```
 
-### Prompt Templates (prompts.yaml)
+### Prompt Templates (sample_prompts.yaml)
 
 The library supports YAML-based prompt templates for different processing types. See `llm_helpers/prompts/prompts.yaml` for examples.
 

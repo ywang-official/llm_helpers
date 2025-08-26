@@ -41,22 +41,25 @@ class PromptHelper:
         """
         self.default_response_type = default_response_type
         self.prompts: Dict[str, Dict] = {}
+
+        self.prompt_sources = [Path(__file__).parent.parent / "prompts" / "internal_prompts.yaml"]
         
         if prompt_source is None:
             # Use default prompts from the package
-            prompt_source = Path(__file__).parent.parent / "prompts" / "prompts.yaml"
+            prompt_source = Path(__file__).parent.parent / "prompts" / "sample_prompts.yaml"
         
-        self.prompt_source = Path(prompt_source)
+        self.prompt_sources.append(Path(prompt_source))
         self.load_prompts()
     
     def load_prompts(self) -> None:
         """Load prompts from the specified source."""
-        if self.prompt_source.is_file():
-            self._load_from_file(self.prompt_source)
-        elif self.prompt_source.is_dir():
-            self._load_from_directory(self.prompt_source)
-        else:
-            raise ValueError(f"Prompt source not found: {self.prompt_source}")
+        for prompt_source in self.prompt_sources:
+            if prompt_source.is_file():
+                self._load_from_file(prompt_source)
+            elif prompt_source.is_dir():
+                self._load_from_directory(prompt_source)
+            else:
+                raise ValueError(f"Prompt source not found: {prompt_source}")
         
         logger.info(f"Loaded {len(self.prompts)} prompt configurations")
     
