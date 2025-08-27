@@ -197,14 +197,14 @@ class ProcessorCore:
                 for key, val in sequential_config.items():
                     if val in response:
                         chunk[key] = response.get(val)
-                cleaned = await self.process_v2(
+                response = await self.process_v2(
                     components=chunk,
                     process_type=process_type,
                     context=context,
                     response_type=response_type,
                     custom_schema=custom_schema,
                 )
-                yield cleaned
+                yield response
         except Exception as e:
             logger.error(f"Error in sequential processing: {str(e)}")
             raise
