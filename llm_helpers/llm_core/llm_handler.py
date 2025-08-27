@@ -137,6 +137,9 @@ class LLMHandler:
             # Import here to avoid circular imports
             from .llm_handler_openai import OpenAILLMHandler
             return OpenAILLMHandler(**kwargs)
+        elif provider == "azure_openai" or provider == "azure-openai":
+            from .llm_handler_azure_openai import AzureOpenAILLMHandler
+            return AzureOpenAILLMHandler(**kwargs)
         elif provider == "anthropic":
             from .llm_handler_anthropic import AnthropicLLMHandler
             return AnthropicLLMHandler(**kwargs)
@@ -144,4 +147,4 @@ class LLMHandler:
             from .llm_handler_gemini import GeminiLLMHandler
             return GeminiLLMHandler(**kwargs)
         else:
-            raise ValueError(f"Invalid provider: {provider}. Valid providers: openai, anthropic, gemini")
+            raise ValueError(f"Invalid provider: {provider}. Valid providers: openai, azure_openai, anthropic, gemini")
