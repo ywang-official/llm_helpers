@@ -310,7 +310,7 @@ class ProcessorCore:
                     try:
                         response = await self.process_v2(
                             components=batch,
-                            process_type=process_type,
+                            process_type=batch.get("process_type", process_type),
                             context=context,
                             response_type=response_type,
                             custom_schema=custom_schema,
@@ -334,7 +334,7 @@ class ProcessorCore:
 
     async def sequential_batch_process(
             self,
-            chunks: List[Dict],
+            batches: List[Dict],
             process_type: str,
             context: Optional[Dict] = None,
             sequential_config: Optional[Dict] = None,
@@ -344,13 +344,13 @@ class ProcessorCore:
     ) -> AsyncGenerator[Dict, None]:
         try:
             response = {val: "n/a" for val in sequential_config.values()}
-            for chunk in chunks:
+            for batch in batches:
                 for key, val in sequential_config.items():
                     if val in response:
-                        chunk[key] = response.get(val)
+                        batch[key] = response.get(val)
                 response = await self.process_v2(
-                    components=chunk,
-                    process_type=process_type,
+                    components=batch,
+                    process_type=batch.get("process_type", process_type),
                     context=context,
                     response_type=response_type,
                     custom_schema=custom_schema,
@@ -364,7 +364,7 @@ class ProcessorCore:
 
     async def sequential_batch_process_all(
             self,
-            chunks: List[Dict],
+            batches: List[Dict],
             process_type: str,
             context: Optional[Dict] = None,
             sequential_config: Optional[Dict] = None,
@@ -374,7 +374,7 @@ class ProcessorCore:
     ) -> List[Dict]:
         try:
             results = []
-            async for result in self.sequential_batch_process(chunks, process_type, context, sequential_config, response_type, custom_schema, handler):
+            async for result in self.sequential_batch_process(batches, process_type, context, sequential_config, response_type, custom_schema, handler):
                 results.append(result)
             return results
         except Exception as e:
