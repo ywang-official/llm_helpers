@@ -20,6 +20,7 @@ dependencies = [
 
 [tool.poetry]
 packages = [{include = "llm_helpers"}]
+include = ["llm_helpers/prompts/internal_prompts.yaml"]
 
 [tool.poetry.dependencies]
 python = ">=3.12"
