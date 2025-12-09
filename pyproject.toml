@@ -18,24 +18,27 @@ dependencies = [
     "jinja2>=3.1.0"
 ]
 
-[tool.poetry]
-packages = [{include = "llm_helpers"}]
-include = ["llm_helpers/prompts/internal_prompts.yaml"]
-
-[tool.poetry.dependencies]
-python = ">=3.12"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.0.0"
-pytest-asyncio = "^0.21.0"
-black = "^23.0.0"
-isort = "^5.12.0"
-flake8 = "^7.0.0"
-mypy = "^1.5.0"
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=7.0.0",
+    "mypy>=1.5.0",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["llm_helpers"]
+
+[tool.hatch.build]
+include = [
+    "llm_helpers/prompts/internal_prompts.yaml",
+]
 
 [tool.black]
 line-length = 88
